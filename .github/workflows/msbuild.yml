@@ -1,0 +1,44 @@
+name: signpath sign test
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: upload-unsigned-artifact
+      id: upload-unsigned-artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: unsigned_binaries
+        path: |
+          bin_unsigned
+
+    - id: optional_step_id
+      uses: signpath/github-action-submit-signing-request@v1.1
+      with:
+        api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+        organization-id: '78e41f48-55fc-4f33-8ea5-08ac32f65ac8'
+        project-slug: 'teraterm'
+        signing-policy-slug: 'test-signing'
+        artifact-configuration-slug: 'teraterm_portable'
+        github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
+        output-artifact-directory: 'bin_signed'
+        wait-for-completion: true
+
+    - name: list files
+      shell: bash
+      run: |
+        find . | grep -v .git
+
+    - name: upload-signed-artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: signed_binaries
+        path: |
+          bin_signed
