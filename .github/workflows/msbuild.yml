@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: windows-2022
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
 
     steps:
     - uses: actions/checkout@v4
@@ -20,6 +22,7 @@ jobs:
           bin_unsigned
 
     - id: optional_step_id
+      if:  ${{ env.SIGNPATH_API_TOKEN }}
       uses: signpath/github-action-submit-signing-request@v1.1
       with:
         api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
@@ -37,6 +40,7 @@ jobs:
         find . | grep -v .git
 
     - name: upload-signed-artifact
+      if:  ${{ env.SIGNPATH_API_TOKEN }}
       uses: actions/upload-artifact@v4
       with:
         name: signed_binaries
